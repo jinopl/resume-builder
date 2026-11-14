@@ -36,11 +36,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand h1 { font-size: 1.15rem; }
 .brand p { margin: 2px 0 0; }
-.brand__logo {
-  display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px;
-  background: var(--accent); color: #fff; font-size: 20px;
-}
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+.brand svg { flex-shrink: 0; display: block; }
 
 .btn {
   border: 1px solid var(--border); background: var(--surface); border-radius: 8px;
@@ -254,3 +251,77 @@ button, input, select, textarea { font: inherit; color: inherit; }
   padding: 2px 8px; border-radius: 999px; background: var(--warn-soft); color: var(--warn); border: 1px solid #f0d58a;
 }
 .version a { color: inherit; }
+
+/* ---------- Pills (File menu, Download PDF) ---------- */
+.pill {
+  display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.pill:hover { background: #f3f5f8; border-color: #c4ccd6; }
+.pill[aria-expanded='true'] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.pill--primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.15); }
+.pill--primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.pill:disabled { opacity: 0.65; cursor: progress; }
+.chevron-icon { transition: transform .15s; margin-right: -4px; }
+.chevron-icon--open { transform: rotate(180deg); }
+.segmented { border-radius: 999px; }
+.segmented__btn { border-radius: 999px; padding: 7px 16px; }
+
+/* ---------- Dropdown menu ---------- */
+.menu-root { position: relative; }
+.menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; min-width: 250px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: 0 12px 32px -8px rgba(16, 24, 40, 0.22), 0 2px 6px rgba(16, 24, 40, 0.08);
+  animation: menu-in .12s ease-out;
+}
+@keyframes menu-in { from { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .menu, .chevron-icon, .pill { animation: none; transition: none; } }
+.menu__item {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 9px;
+  background: transparent; text-align: left; cursor: pointer;
+}
+.menu__item:hover, .menu__item:focus-visible { background: var(--accent-soft); outline: none; }
+.menu__icon { display: inline-flex; color: var(--muted); }
+.menu__item:hover .menu__icon, .menu__item:focus-visible .menu__icon { color: var(--accent); }
+.menu__label { flex: 1; font-weight: 500; }
+.menu__hint { font-size: 0.75rem; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.menu__sep { height: 1px; background: var(--border); margin: 6px 4px; }
+
+/* ---------- Score badge on the Check tab ---------- */
+.tab { display: inline-flex; align-items: center; gap: 7px; }
+/* Re-assert after the rule above: Preview tab only on narrow screens. */
+.tab--preview { display: none; }
+@media (max-width: 960px) { .tab--preview { display: inline-flex; } }
+.score-badge {
+  min-width: 28px; padding: 1px 7px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+  text-align: center; line-height: 1.5; font-variant-numeric: tabular-nums;
+}
+.score-badge--good { background: var(--ok-soft); color: var(--ok); }
+.score-badge--ok { background: var(--warn-soft); color: var(--warn); }
+.score-badge--poor { background: var(--danger-soft); color: var(--danger); }
+
+/* ---------- Header on small screens ---------- */
+@media (max-width: 760px) {
+  .topbar { gap: 10px 12px; padding: 10px 16px; }
+  .brand__tagline { display: none; }
+  .brand h1 { font-size: 1.05rem; }
+  .segmented { order: 3; width: 100%; }
+  .segmented__btn { flex: 1; }
+}
+.label-short { display: none; }
+@media (max-width: 760px) {
+  /* Anchor the menu to the header so it can span the screen width. */
+  .topbar { position: relative; }
+  .menu-root { position: static; }
+  .menu { left: 16px; right: 16px; top: 54px; min-width: 0; }
+}
+@media (max-width: 480px) {
+  .label-long { display: none; }
+  .label-short { display: inline; }
+  /* Logo only (title stays for screen readers via font-size 0), keep the channel badge. */
+  .brand { gap: 6px; }
+  .brand h1 { font-size: 0; gap: 0; }
+  .brand h1 .channel-badge { font-size: 0.65rem; }
+}

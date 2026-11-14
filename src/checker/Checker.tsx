@@ -1,19 +1,12 @@
-import { useMemo } from 'react';
 import { useResumeStore } from '../store/useResumeStore';
-import { runChecks, runCoverLetterChecks, scoreFor, type Severity } from './checks';
+import type { Severity } from './checks';
+import { useScore } from './useScore';
 
 const LABELS: Record<Severity, string> = { error: 'Fix', warning: 'Improve', tip: 'Tip' };
 
 export function Checker() {
-  const resume = useResumeStore((s) => s.resume);
-  const pageCount = useResumeStore((s) => s.pageCount);
   const doc = useResumeStore((s) => s.doc);
-  const issues = useMemo(
-    () => (doc === 'cover' ? runCoverLetterChecks(resume) : runChecks(resume, pageCount)),
-    [resume, pageCount, doc],
-  );
-  const score = scoreFor(issues);
-  const grade = score >= 85 ? 'good' : score >= 60 ? 'ok' : 'poor';
+  const { issues, score, grade, label } = useScore();
 
   return (
     <div className="editor">
@@ -23,7 +16,7 @@ export function Checker() {
             <span>{score}</span>
           </div>
           <div>
-            <h2>{doc === 'cover' ? 'Cover letter check' : 'Resume check'}</h2>
+            <h2>{label}</h2>
             <p className="muted">
               {doc === 'cover'
                 ? 'Checks for a focused, tailored letter: recipient, length, structure and specifics.'

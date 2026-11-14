@@ -9,6 +9,9 @@ import { exportJson, importJsonFile } from './lib/io';
 import { downloadPdf } from './lib/pdf';
 import { sampleResume } from './data/sample';
 import { APP_VERSION, CHANNEL_LABEL } from './lib/env';
+import { FileMenu } from './ui/FileMenu';
+import { IconDownload, IconNew, IconOpen, IconSave, IconSparkle, Logo } from './ui/icons';
+import { useScore } from './checker/useScore';
 
 type Tab = 'edit' | 'design' | 'check' | 'preview';
 type Notice = { kind: 'error' | 'success'; text: string } | null;
@@ -33,6 +36,7 @@ export default function App() {
   const [notice, setNotice] = useState<Notice>(null);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const { score, grade, label: scoreLabel } = useScore();
 
   const onImport = async (file: File | undefined) => {
     if (!file) return;
@@ -58,7 +62,7 @@ export default function App() {
   };
 
   const onNew = () => {
-    if (confirm('Start a new, empty resume and cover letter? Your current data will be cleared from this browser. Download the JSON first if you want to keep it.')) {
+    if (confirm('Start a new, empty resume and cover letter? Your current data will be cleared from this browser. Use File → Save file for later first if you want to keep it.')) {
       clearAll();
       setNotice(null);
     }
@@ -75,15 +79,13 @@ export default function App() {
     <div className="app" data-tab={tab}>
       <header className="topbar">
         <div className="brand">
-          <span className="brand__logo" aria-hidden>
-            ▤
-          </span>
+          <Logo />
           <div>
             <h1>
               Resume Builder
               {CHANNEL_LABEL && <span className="channel-badge">{CHANNEL_LABEL}</span>}
             </h1>
-            <p className="muted small">Free &amp; private. Your data never leaves your browser.</p>
+            <p className="muted small brand__tagline">Free &amp; private. Your data never leaves your browser.</p>
           </div>
         </div>
 
@@ -103,15 +105,20 @@ export default function App() {
         </div>
 
         <div className="toolbar">
-          <button type="button" className="btn btn--ghost" onClick={onNew}>
-            New
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={onSample}>
-            Example
-          </button>
-          <button type="button" className="btn" onClick={() => fileRef.current?.click()} title="Load a resume.json you saved earlier">
-            Upload JSON
-          </button>
+          <FileMenu
+            items={[
+              { label: 'New resume', icon: <IconNew />, onSelect: onNew },
+              { label: 'Load example', icon: <IconSparkle />, onSelect: onSample },
+              {
+                label: 'Open saved file',
+                hint: '.json',
+                icon: <IconOpen />,
+                onSelect: () => fileRef.current?.click(),
+                separated: true,
+              },
+              { label: 'Save file for later', hint: '.json', icon: <IconSave />, onSelect: () => exportJson(resume) },
+            ]}
+          />
           <input
             ref={fileRef}
             type="file"
@@ -122,11 +129,22 @@ export default function App() {
               e.target.value = '';
             }}
           />
-          <button type="button" className="btn" onClick={() => exportJson(resume)} title="Save your resume and cover letter to edit again later">
-            Download JSON
-          </button>
-          <button type="button" className="btn btn--primary" onClick={onDownloadPdf} disabled={busy}>
-            {busy ? 'Preparing…' : doc === 'cover' ? 'Download cover letter PDF' : 'Download resume PDF'}
+          <button
+            type="button"
+            className="pill pill--primary"
+            onClick={onDownloadPdf}
+            disabled={busy}
+            title={doc === 'cover' ? 'Download your cover letter as a PDF' : 'Download your resume as a PDF'}
+          >
+            <IconDownload />
+            {busy ? (
+              <span>Preparing…</span>
+            ) : (
+              <>
+                <span className="label-long">Download PDF</span>
+                <span className="label-short">PDF</span>
+              </>
+            )}
           </button>
         </div>
       </header>
@@ -150,6 +168,12 @@ export default function App() {
             onClick={() => setTab(t.id)}
           >
             {t.label}
+            {t.id === 'check' && (
+              <span className={`score-badge score-badge--${grade}`} title={`${scoreLabel}: ${score} out of 100`}>
+                <span className="sr-only">{scoreLabel}: </span>
+                {score}
+              </span>
+            )}
           </button>
         ))}
       </nav>
@@ -165,7 +189,7 @@ export default function App() {
             <span>
               {autosave
                 ? 'Your resume and cover letter are saved only in this browser’s local storage. Turn off to remove them.'
-                : 'Autosave is off. Download the JSON before closing this page.'}
+                : 'Autosave is off. Use File → Save file for later before closing this page.'}
             </span>
             <span className="version">
               Version {APP_VERSION} ·{' '}
