@@ -1,9 +1,25 @@
 name: Deploy to GitHub Pages
 
+# Publishes one Pages site containing two builds:
+#   /resume-builder/      the latest release tag (v*)   = live site
+#   /resume-builder/dev/  the head of the `dev` branch  = preview
+#
+# Both are rebuilt on every deploy, because each Pages deploy replaces the
+# whole site. Pushing to `dev` refreshes the preview only (live stays on the
+# latest tag); pushing a new v* tag updates the live site.
+#
+# Runs via `workflow_run`, which always executes on the default branch, so the
+# github-pages environment's default "main only" rule needs no changes.
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
   workflow_dispatch:
+    inputs:
+      release:
+        description: 'Tag to publish as the live site (e.g. v1.0.0). Empty = latest tag. Use to roll back.'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -16,18 +32,79 @@ concurrency:
 
 jobs:
   build:
+    # Manual runs, or successful CI runs from a push to `dev` or a tag
+    # (not pull requests, and not `main`: merging alone doesn't release).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch != 'main')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # all branches and tags
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build
+
+      - name: Pick versions
+        id: pick
+        env:
+          REQUESTED: ${{ inputs.release }}
+        run: |
+          release="$REQUESTED"
+          if [ -z "$release" ]; then
+            release="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
+          fi
+          if [ -z "$release" ]; then
+            echo "::error::No release tag (v*) exists yet. Push one, e.g. git tag v1.0.0 && git push origin v1.0.0"
+            exit 1
+          fi
+          if ! printf '%s' "$release" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$' \
+             || ! git rev-parse -q --verify "refs/tags/$release" >/dev/null; then
+            echo "::error::'$release' is not an existing vX.Y.Z tag"
+            exit 1
+          fi
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify origin/dev >/dev/null; then
+            echo "dev_sha=$(git rev-parse --short origin/dev)" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Live: $release   Dev: $(git rev-parse --short origin/dev 2>/dev/null || echo none)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build live site
+        env:
+          RELEASE: ${{ steps.pick.outputs.release }}
+        run: |
+          git worktree add "$RUNNER_TEMP/live" "refs/tags/$RELEASE"
+          cd "$RUNNER_TEMP/live"
+          npm ci
+          VITE_APP_VERSION="$RELEASE" npm run build
+
+      - name: Build dev preview
+        if: steps.pick.outputs.dev_sha != ''
+        env:
+          DEV_SHA: ${{ steps.pick.outputs.dev_sha }}
+        run: |
+          git worktree add "$RUNNER_TEMP/dev" origin/dev
+          cd "$RUNNER_TEMP/dev"
+          npm ci
+          VITE_APP_VERSION="dev-$DEV_SHA" VITE_CHANNEL=dev npm run build
+
+      - name: Assemble site
+        run: |
+          mkdir -p site
+          cp -r "$RUNNER_TEMP/live/dist/." site/
+          if [ -d "$RUNNER_TEMP/dev/dist" ]; then
+            mkdir -p site/dev
+            cp -r "$RUNNER_TEMP/dev/dist/." site/dev/
+          fi
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
 
   deploy:
     needs: build

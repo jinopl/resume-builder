@@ -2,9 +2,10 @@ import { create } from 'zustand';
 import { produce } from 'immer';
 import { emptyResume, parseResume, type Resume } from '../schema/resume';
 import { sampleResume } from '../data/sample';
+import { STORAGE_PREFIX } from '../lib/env';
 
-const RESUME_KEY = 'resume-builder:resume';
-const SETTINGS_KEY = 'resume-builder:settings';
+const RESUME_KEY = `${STORAGE_PREFIX}:resume`;
+const SETTINGS_KEY = `${STORAGE_PREFIX}:settings`;
 
 // localStorage can be missing or throw (private mode, blocked storage).
 function readStorage(key: string): string | null {

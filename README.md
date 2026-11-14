@@ -31,13 +31,34 @@ npm run dev        # http://localhost:5173
 npm run build      # type-check + production build into dist/
 ```
 
-## Deploy to GitHub Pages
+## Branches, previews and releases
 
-1. Push this folder to a GitHub repository (branch `main`).
-2. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Every push to `main` builds and publishes via `.github/workflows/deploy.yml`.
+| Where | URL | Updated when |
+|---|---|---|
+| Live site | https://jinopl.github.io/resume-builder/ | a new `v*` tag is pushed |
+| Dev preview | https://jinopl.github.io/resume-builder/dev/ | `dev` is pushed |
+| Local | http://localhost:5173 | `npm run dev` |
 
-Asset paths are relative (`base: './'` in `vite.config.ts`), so it works at `https://<user>.github.io/<repo>/` without extra config.
+Workflow:
+
+1. **Work and test locally** on `dev` (or a feature branch merged into `dev`): `npm run dev`.
+2. **Preview:** push `dev`. About a minute later, check `/dev/`. It shows a "Dev preview" badge and uses separate browser storage, so it never touches data saved on the live site.
+3. **Merge** `dev` into `main` (pull request or `git merge`). This alone doesn't change the live site.
+4. **Release:** tag `main` with the next version and push the tag. The live site updates.
+
+```bash
+git checkout main && git pull
+git tag -a v1.1.0 -m "v1.1.0: short summary"
+git push origin v1.1.0
+```
+
+Versioning ([SemVer](https://semver.org)): `v1.0.1` for fixes, `v1.1.0` for new features, `v2.0.0` for breaking changes (e.g. JSON format changes).
+
+**Roll back:** in GitHub → **Actions → Deploy to GitHub Pages → Run workflow**, enter an older tag (e.g. `v1.0.0`). Or delete the bad tag and run the workflow with the release field empty.
+
+How it works: `ci.yml` builds every push and pull request. When CI succeeds for a push to `dev` or a tag, `deploy.yml` builds **both** the latest tag and `dev`, and publishes them together (each Pages deploy replaces the whole site). It runs via `workflow_run` on the default branch, so the `github-pages` environment needs no extra branch rules. The version (tag, `dev-<sha>` or `local`) is shown in the app footer and saved in exported JSON (`meta.version`).
+
+Setup for a fresh fork: **Settings → Pages → Source: GitHub Actions**. Asset paths are relative (`base: './'`), so builds work under any sub-path.
 
 ## How it works
 

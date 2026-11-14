@@ -8,6 +8,7 @@ import { Preview } from './preview/Preview';
 import { exportJson, importJsonFile } from './lib/io';
 import { downloadPdf } from './lib/pdf';
 import { sampleResume } from './data/sample';
+import { APP_VERSION, CHANNEL_LABEL } from './lib/env';
 
 type Tab = 'edit' | 'design' | 'check' | 'preview';
 type Notice = { kind: 'error' | 'success'; text: string } | null;
@@ -78,7 +79,10 @@ export default function App() {
             ▤
           </span>
           <div>
-            <h1>Resume Builder</h1>
+            <h1>
+              Resume Builder
+              {CHANNEL_LABEL && <span className="channel-badge">{CHANNEL_LABEL}</span>}
+            </h1>
             <p className="muted small">Free &amp; private. Your data never leaves your browser.</p>
           </div>
         </div>
@@ -162,6 +166,12 @@ export default function App() {
               {autosave
                 ? 'Your resume and cover letter are saved only in this browser’s local storage. Turn off to remove them.'
                 : 'Autosave is off. Download the JSON before closing this page.'}
+            </span>
+            <span className="version">
+              Version {APP_VERSION} ·{' '}
+              <a href="https://github.com/jinopl/resume-builder" target="_blank" rel="noreferrer">
+                Source on GitHub
+              </a>
             </span>
           </footer>
         </div>

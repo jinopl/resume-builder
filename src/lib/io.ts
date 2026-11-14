@@ -1,7 +1,6 @@
 import { JSON_RESUME_SCHEMA_URL, parseResume, type ParseResult, type Resume } from '../schema/resume';
 import { cleanResume } from './clean';
-
-export const APP_VERSION = '0.1.0';
+import { APP_VERSION } from './env';
 
 function safeFileName(name: string | undefined, suffix: string, ext: string) {
   const base = (name ?? '').trim().replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_|_$/g, '');
