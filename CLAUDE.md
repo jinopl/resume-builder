@@ -20,12 +20,13 @@ Free, private, browser-only resume and cover letter builder. No backend: all dat
 | Local | http://localhost:5173 | working tree |
 
 Flow:
-1. **Work on `dev`** (or a feature branch merged into `dev`). Test locally first.
-2. **Push `dev`** to update the `/dev/` preview (about 2 minutes).
+1. **Work on `dev`** (or a feature branch merged into `dev`). Test locally, and the user reviews it on localhost.
+2. **Push `dev`** *only when the user asks*, to update the `/dev/` preview (about 2 minutes).
 3. **Merge `dev` into `main`** when the user is happy. Pushing `main` does *not* change the live site.
 4. **Release = push a tag** on `main`: `git tag -a vX.Y.Z -m "vX.Y.Z: summary" && git push origin vX.Y.Z`. That updates the live site.
 
 Rules for Claude:
+- **Local first.** After any change, stop at local: build, test it on the local dev server (localhost), and let the user check it there. **Don't push to `dev` until the user explicitly asks** ("push to dev"). Never push automatically as part of finishing a change.
 - Do day-to-day work on `dev`. Never commit directly to `main` except by merging `dev`.
 - Commit or push only when the user asks. **Create or push release tags only when the user says to release**, and confirm the version number.
 - Versioning is SemVer: `vX.Y.Z+1` fixes, `vX.Y+1.0` features, `vX+1.0.0` breaking changes (e.g. JSON format changes). Keep `package.json` `version` in sync with the release (and run `npm install --package-lock-only` so the lockfile matches).

@@ -30,13 +30,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Top bar ---------- */
 .topbar {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
   padding: 12px 20px; background: var(--surface); border-bottom: 1px solid var(--border);
 }
 .brand { display: flex; align-items: center; gap: 12px; }
 .brand h1 { font-size: 1.15rem; }
 .brand p { margin: 2px 0 0; }
-.toolbar { display: flex; gap: 8px; align-items: center; margin-left: auto; }
+.toolbar { display: flex; gap: 8px; align-items: center; justify-self: end; }
 .brand svg { flex-shrink: 0; display: block; }
 
 .btn {
@@ -289,28 +289,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .menu__hint { font-size: 0.75rem; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .menu__sep { height: 1px; background: var(--border); margin: 6px 4px; }
 
-/* ---------- Score badge on the Check tab ---------- */
+/* ---------- Tabs ---------- */
 .tab { display: inline-flex; align-items: center; gap: 7px; }
 /* Re-assert after the rule above: Preview tab only on narrow screens. */
 .tab--preview { display: none; }
 @media (max-width: 960px) { .tab--preview { display: inline-flex; } }
-.score-badge {
-  min-width: 28px; padding: 1px 7px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
-  text-align: center; line-height: 1.5; font-variant-numeric: tabular-nums;
-}
-.score-badge--good { background: var(--ok-soft); color: var(--ok); }
-.score-badge--ok { background: var(--warn-soft); color: var(--warn); }
-.score-badge--poor { background: var(--danger-soft); color: var(--danger); }
+
+.brand__tagline { white-space: nowrap; }
+@media (max-width: 1100px) { .brand__tagline { display: none; } }
 
 /* ---------- Header on small screens ---------- */
 @media (max-width: 760px) {
-  .topbar { gap: 10px 12px; padding: 10px 16px; }
+  .topbar { display: flex; flex-wrap: wrap; gap: 10px 12px; padding: 10px 16px; }
+  .toolbar { margin-left: auto; }
   .brand__tagline { display: none; }
   .brand h1 { font-size: 1.05rem; }
   .segmented { order: 3; width: 100%; }
   .segmented__btn { flex: 1; }
 }
-.label-short { display: none; }
 @media (max-width: 760px) {
   /* Anchor the menu to the header so it can span the screen width. */
   .topbar { position: relative; }
@@ -318,8 +314,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .menu { left: 16px; right: 16px; top: 54px; min-width: 0; }
 }
 @media (max-width: 480px) {
-  .label-long { display: none; }
-  .label-short { display: inline; }
   /* Logo only (title stays for screen readers via font-size 0), keep the channel badge. */
   .brand { gap: 6px; }
   .brand h1 { font-size: 0; gap: 0; }

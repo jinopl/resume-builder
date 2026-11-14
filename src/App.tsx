@@ -11,7 +11,6 @@ import { sampleResume } from './data/sample';
 import { APP_VERSION, CHANNEL_LABEL } from './lib/env';
 import { FileMenu } from './ui/FileMenu';
 import { IconDownload, IconNew, IconOpen, IconSave, IconSparkle, Logo } from './ui/icons';
-import { useScore } from './checker/useScore';
 
 type Tab = 'edit' | 'design' | 'check' | 'preview';
 type Notice = { kind: 'error' | 'success'; text: string } | null;
@@ -36,7 +35,6 @@ export default function App() {
   const [notice, setNotice] = useState<Notice>(null);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const { score, grade, label: scoreLabel } = useScore();
 
   const onImport = async (file: File | undefined) => {
     if (!file) return;
@@ -135,16 +133,10 @@ export default function App() {
             onClick={onDownloadPdf}
             disabled={busy}
             title={doc === 'cover' ? 'Download your cover letter as a PDF' : 'Download your resume as a PDF'}
+            aria-label={busy ? 'Preparing PDF' : doc === 'cover' ? 'Download cover letter PDF' : 'Download resume PDF'}
           >
             <IconDownload />
-            {busy ? (
-              <span>Preparing…</span>
-            ) : (
-              <>
-                <span className="label-long">Download PDF</span>
-                <span className="label-short">PDF</span>
-              </>
-            )}
+            <span>{busy ? '…' : 'PDF'}</span>
           </button>
         </div>
       </header>
@@ -168,12 +160,6 @@ export default function App() {
             onClick={() => setTab(t.id)}
           >
             {t.label}
-            {t.id === 'check' && (
-              <span className={`score-badge score-badge--${grade}`} title={`${scoreLabel}: ${score} out of 100`}>
-                <span className="sr-only">{scoreLabel}: </span>
-                {score}
-              </span>
-            )}
           </button>
         ))}
       </nav>
