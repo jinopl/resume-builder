@@ -47,6 +47,12 @@ Rules for Claude:
 - `src/templates/layout.tsx`: the shared ATS-safe PDF layout (`ResumeDocument`, `CoverLetterDocument`). `variants.ts` holds per-template design parameters, `theme.ts` the colour/font presets, `index.ts` the registry.
 - `src/editor/`, `src/design/`, `src/checker/`, `src/preview/`, `src/lib/`: forms, Design tab, checks, PDF-to-canvas preview, helpers.
 
+## App styling and dark mode
+
+- All app colours are CSS variables in `src/styles.css`: light values on `:root`, dark overrides on `:root[data-theme='dark']`. **Don't hard-code colours in new CSS**; add a token to both blocks instead. Only the "paper" (`.preview__page`, `.thumb`) is intentionally always white, because it shows the real PDF.
+- Theme preference (`auto` / `light` / `dark`) lives in `src/lib/theme.ts` under the localStorage key `resume-builder:theme` (shared by live and dev, since it's a display preference). The inline script in `index.html` applies it before first paint; keep the two in sync.
+- The PDF templates never use app theme colours.
+
 ## ATS rules for PDF templates (keep these)
 
 - Single column, real text, standard headings, contact info in the page body, PDF standard fonts (Helvetica/Times), plain "•" bullets, no hyphenation.

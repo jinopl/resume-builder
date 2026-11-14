@@ -10,6 +10,7 @@ import { downloadPdf } from './lib/pdf';
 import { sampleResume } from './data/sample';
 import { APP_VERSION, CHANNEL_LABEL } from './lib/env';
 import { FileMenu } from './ui/FileMenu';
+import { ThemeToggle } from './ui/ThemeToggle';
 import { IconDownload, IconNew, IconOpen, IconSave, IconSparkle, Logo } from './ui/icons';
 
 type Tab = 'edit' | 'design' | 'check' | 'preview';
@@ -103,6 +104,7 @@ export default function App() {
         </div>
 
         <div className="toolbar">
+          <ThemeToggle />
           <FileMenu
             items={[
               { label: 'New resume', icon: <IconNew />, onSelect: onNew },

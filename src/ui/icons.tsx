@@ -7,7 +7,7 @@ import type { SVGProps } from 'react';
 export function Logo({ size = 36 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden focusable="false">
-      <rect width="32" height="32" rx="8" fill="var(--accent)" />
+      <rect width="32" height="32" rx="8" fill="var(--brand)" />
       <path
         d="M11.5 23.5V8.5h5.25a4.25 4.25 0 0 1 0 8.5H11.5M16.5 17l5 6.5"
         fill="none"
@@ -86,5 +86,26 @@ export const IconSave = (p: IconProps) => (
   <Icon {...p}>
     <path d="M4 3.5h9.5L16.5 6.5V15a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 15V5A1.5 1.5 0 0 1 5 3.5" />
     <path d="M6.5 3.5v4h6v-4M6.5 16.5v-5h7v5" />
+  </Icon>
+);
+
+export const IconSun = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="10" cy="10" r="3.5" />
+    <path d="M10 2v1.5M10 16.5V18M2 10h1.5M16.5 10H18M4.3 4.3l1.1 1.1M14.6 14.6l1.1 1.1M4.3 15.7l1.1-1.1M14.6 5.4l1.1-1.1" />
+  </Icon>
+);
+
+export const IconMoon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M16.5 11.8A6.8 6.8 0 0 1 8.2 3.5a6.8 6.8 0 1 0 8.3 8.3z" />
+  </Icon>
+);
+
+/** Half-filled circle: "follow the device". */
+export const IconAuto = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="10" cy="10" r="7" />
+    <path d="M10 3a7 7 0 0 1 0 14z" fill="currentColor" stroke="none" />
   </Icon>
 );
