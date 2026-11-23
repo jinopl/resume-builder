@@ -18,7 +18,8 @@ export function downloadBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function exportJson(resume: Resume) {
+/** Download the resume as a JSON Resume file. Returns the file name. */
+export function exportJson(resume: Resume): string {
   const cleaned = cleanResume(resume);
   const out: Resume = {
     ...cleaned,
@@ -30,7 +31,9 @@ export function exportJson(resume: Resume) {
   const blob = new Blob([JSON.stringify({ $schema, ...rest }, null, 2)], {
     type: 'application/json',
   });
-  downloadBlob(blob, safeFileName(resume.basics.name, '_resume', 'json'));
+  const filename = safeFileName(resume.basics.name, '_resume', 'json');
+  downloadBlob(blob, filename);
+  return filename;
 }
 
 export function pdfFileName(resume: Resume, kind: 'resume' | 'cover' = 'resume') {

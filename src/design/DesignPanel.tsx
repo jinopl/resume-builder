@@ -7,6 +7,7 @@ import { renderPdfBlob } from '../lib/pdf';
 import { renderPages } from '../preview/renderPages';
 import { sampleResume } from '../data/sample';
 import { SectionCard } from '../editor/fields';
+import { IconArrowDown, IconArrowUp } from '../ui/icons';
 
 /** First page of `templateId`, rendered with the user's data (or the example if empty). */
 function Thumbnail({ templateId, resume }: { templateId: string; resume: Resume }) {
@@ -141,10 +142,10 @@ function SectionsPanel() {
               <span className="list-item__actions">
                 {!visible && <span className="badge">Hidden</span>}
                 <button type="button" className="icon-btn" aria-label={`Move ${SECTION_TITLES[key]} up`} disabled={i === 0} onClick={() => move(i, -1)}>
-                  ↑
+                  <IconArrowUp />
                 </button>
                 <button type="button" className="icon-btn" aria-label={`Move ${SECTION_TITLES[key]} down`} disabled={i === order.length - 1} onClick={() => move(i, 1)}>
-                  ↓
+                  <IconArrowDown />
                 </button>
               </span>
             </li>

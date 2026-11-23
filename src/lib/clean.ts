@@ -5,7 +5,7 @@ import type { Resume } from '../schema/resume';
  * entries). Before rendering or exporting we strip all of that:
  * strings are trimmed, empty strings / arrays / objects are dropped.
  */
-function clean(value: unknown): unknown {
+export function clean(value: unknown): unknown {
   if (typeof value === 'string') {
     const t = value.trim();
     return t === '' ? undefined : t;

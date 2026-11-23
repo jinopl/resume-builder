@@ -109,3 +109,34 @@ export const IconAuto = (p: IconProps) => (
     <path d="M10 3a7 7 0 0 1 0 14z" fill="currentColor" stroke="none" />
   </Icon>
 );
+
+export const IconLock = (p: IconProps) => (
+  <Icon width="14" height="14" {...p}>
+    <rect x="4.5" y="9" width="11" height="8" rx="1.75" />
+    <path d="M7 9V6.5a3 3 0 0 1 6 0V9" />
+  </Icon>
+);
+
+export const IconChevronRight = (p: IconProps) => (
+  <Icon width="14" height="14" {...p}>
+    <path d="m7.5 5 5 5-5 5" />
+  </Icon>
+);
+
+export const IconArrowUp = (p: IconProps) => (
+  <Icon width="16" height="16" {...p}>
+    <path d="M10 16V4M5.5 8.5 10 4l4.5 4.5" />
+  </Icon>
+);
+
+export const IconArrowDown = (p: IconProps) => (
+  <Icon width="16" height="16" {...p}>
+    <path d="M10 4v12M5.5 11.5 10 16l4.5-4.5" />
+  </Icon>
+);
+
+export const IconClose = (p: IconProps) => (
+  <Icon width="16" height="16" {...p}>
+    <path d="m5 5 10 10M15 5 5 15" />
+  </Icon>
+);

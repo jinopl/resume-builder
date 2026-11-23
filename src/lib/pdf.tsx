@@ -20,7 +20,10 @@ export async function renderPdfBlob(resume: Resume, kind: DocKind = 'resume', te
   return pdf(<Doc resume={cleaned} variant={variant} theme={theme} />).toBlob();
 }
 
-export async function downloadPdf(resume: Resume, kind: DocKind = 'resume') {
+/** Render and download the PDF. Returns the file name. */
+export async function downloadPdf(resume: Resume, kind: DocKind = 'resume'): Promise<string> {
   const blob = await renderPdfBlob(resume, kind);
-  downloadBlob(blob, pdfFileName(resume, kind));
+  const filename = pdfFileName(resume, kind);
+  downloadBlob(blob, filename);
+  return filename;
 }

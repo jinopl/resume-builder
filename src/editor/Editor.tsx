@@ -1,5 +1,8 @@
 import { useResumeStore } from '../store/useResumeStore';
 import { SECTION_TITLES, type SectionKey } from '../schema/resume';
+import { useFocusRequest } from './useFocusRequest';
+import { useScrollSpy } from './useScrollSpy';
+import { PHONE_QUERY, useMedia } from '../lib/useMedia';
 import { BulletsField, DateField, ListEditor, SectionCard, TagsField, TextArea, TextField } from './fields';
 
 function BasicsEditor() {
@@ -18,11 +21,11 @@ function BasicsEditor() {
   return (
     <SectionCard id="edit-basics" title="Personal details" description="Shown at the top of your resume.">
       <div className="grid">
-        <TextField label="Full name" value={basics.name} onChange={set('name')} placeholder="Jane Doe" />
-        <TextField label="Headline / Job title" value={basics.label} onChange={set('label')} placeholder="Data Analyst" />
-        <TextField label="Email" type="email" value={basics.email} onChange={set('email')} placeholder="jane@example.com" />
-        <TextField label="Phone" type="tel" value={basics.phone} onChange={set('phone')} placeholder="+1 555 123 4567" />
-        <TextField label="City" value={basics.location?.city} onChange={setLoc('city')} placeholder="Bengaluru" />
+        <TextField field="name" label="Full name" value={basics.name} onChange={set('name')} placeholder="Jane Doe" />
+        <TextField field="label" label="Headline / Job title" value={basics.label} onChange={set('label')} placeholder="Data Analyst" />
+        <TextField field="email" label="Email" type="email" value={basics.email} onChange={set('email')} placeholder="jane@example.com" />
+        <TextField field="phone" label="Phone" type="tel" value={basics.phone} onChange={set('phone')} placeholder="+91 98765 43210" />
+        <TextField field="city" label="City" value={basics.location?.city} onChange={setLoc('city')} placeholder="Bengaluru" />
         <TextField label="State / Region" value={basics.location?.region} onChange={setLoc('region')} placeholder="Karnataka" />
         <TextField label="Country code" value={basics.location?.countryCode} onChange={setLoc('countryCode')} placeholder="IN" hint="Optional, e.g. US, IN, GB" />
         <TextField label="Website / Portfolio" type="url" value={basics.url} onChange={set('url')} placeholder="https://janedoe.dev" />
@@ -34,6 +37,7 @@ function BasicsEditor() {
         create={() => ({ network: '', url: '' })}
         itemTitle={(p) => p.network ?? ''}
         addLabel="Add profile (LinkedIn, GitHub…)"
+        field="profiles"
         renderItem={(p, patch) => (
           <>
             <TextField label="Network" value={p.network} onChange={(v) => patch((d) => void (d.network = v))} placeholder="LinkedIn" />
@@ -50,8 +54,9 @@ function SummaryEditor() {
   const summary = useResumeStore((s) => s.resume.basics.summary);
   const update = useResumeStore((s) => s.update);
   return (
-    <SectionCard title={SECTION_TITLES.summary} description="2–4 sentences: who you are, your strongest skills, and a headline achievement.">
+    <SectionCard id="edit-summary" title={SECTION_TITLES.summary} description="2–4 sentences: who you are, your strongest skills, and a headline achievement.">
       <TextArea
+        field="summary"
         label="Professional summary"
         rows={5}
         value={summary}
@@ -66,21 +71,22 @@ function SummaryEditor() {
 function WorkEditor() {
   const work = useResumeStore((s) => s.resume.work);
   return (
-    <SectionCard title={SECTION_TITLES.work} description="Most recent first. Leave the end date empty for your current job.">
+    <SectionCard id="edit-work" title={SECTION_TITLES.work} description="Most recent first. Leave the end date empty for your current job.">
       <ListEditor
         items={work}
         select={(d) => d.work}
         create={() => ({ position: '', name: '', startDate: '', endDate: '', highlights: [] })}
         itemTitle={(w) => [w.position, w.name].filter(Boolean).join(' · ')}
         addLabel="Add position"
+        field="add"
         renderItem={(w, patch) => (
           <>
-            <TextField label="Job title" value={w.position} onChange={(v) => patch((d) => void (d.position = v))} placeholder="Software Engineer" />
-            <TextField label="Company" value={w.name} onChange={(v) => patch((d) => void (d.name = v))} placeholder="Acme Corp" />
+            <TextField field="position" label="Job title" value={w.position} onChange={(v) => patch((d) => void (d.position = v))} placeholder="Software Engineer" />
+            <TextField field="company" label="Company" value={w.name} onChange={(v) => patch((d) => void (d.name = v))} placeholder="Acme Corp" />
             <TextField label="Location" value={w.location} onChange={(v) => patch((d) => void (d.location = v))} placeholder="Pune, India / Remote" />
             <TextField label="Company website" type="url" value={w.url} onChange={(v) => patch((d) => void (d.url = v))} hint="Optional" />
-            <DateField label="Start date" value={w.startDate} onChange={(v) => patch((d) => void (d.startDate = v))} />
-            <DateField label="End date" value={w.endDate} onChange={(v) => patch((d) => void (d.endDate = v))} hint="Empty = Present" />
+            <DateField field="startDate" label="Start date" value={w.startDate} onChange={(v) => patch((d) => void (d.startDate = v))} />
+            <DateField field="endDate" label="End date" value={w.endDate} onChange={(v) => patch((d) => void (d.endDate = v))} hint="Empty = Present" />
             <TextArea label="Role summary" rows={2} value={w.summary} onChange={(v) => patch((d) => void (d.summary = v))} hint="Optional one-liner about the team or scope" />
             <BulletsField value={w.highlights} onChange={(l) => patch((d) => void (d.highlights = l))} placeholder={'Reduced report generation time by 50% by…\nLed a team of 4 to…'} />
           </>
@@ -93,21 +99,22 @@ function WorkEditor() {
 function EducationEditor() {
   const education = useResumeStore((s) => s.resume.education);
   return (
-    <SectionCard title={SECTION_TITLES.education}>
+    <SectionCard id="edit-education" title={SECTION_TITLES.education} description="Most recent first. Freshers can add Class XII and Class X with board and percentage.">
       <ListEditor
         items={education}
         select={(d) => d.education}
         create={() => ({ institution: '', studyType: '', area: '', startDate: '', endDate: '' })}
         itemTitle={(e) => [e.studyType, e.area, e.institution].filter(Boolean).join(' · ')}
         addLabel="Add education"
+        field="add"
         renderItem={(e, patch) => (
           <>
-            <TextField wide label="School / University" value={e.institution} onChange={(v) => patch((d) => void (d.institution = v))} placeholder="University of Mumbai" />
+            <TextField wide field="institution" label="School / University" value={e.institution} onChange={(v) => patch((d) => void (d.institution = v))} placeholder="University of Mumbai" />
             <TextField label="Degree" value={e.studyType} onChange={(v) => patch((d) => void (d.studyType = v))} placeholder="B.Tech / Bachelor of Science" />
             <TextField label="Field of study" value={e.area} onChange={(v) => patch((d) => void (d.area = v))} placeholder="Computer Science" />
-            <DateField label="Start date" value={e.startDate} onChange={(v) => patch((d) => void (d.startDate = v))} />
-            <DateField label="End date (or expected)" value={e.endDate} onChange={(v) => patch((d) => void (d.endDate = v))} />
-            <TextField label="Grade / GPA" value={e.score} onChange={(v) => patch((d) => void (d.score = v))} placeholder="8.6 CGPA / 3.7 GPA" hint="Optional" />
+            <DateField field="startDate" label="Start date" value={e.startDate} onChange={(v) => patch((d) => void (d.startDate = v))} />
+            <DateField field="endDate" label="End date (or expected)" value={e.endDate} onChange={(v) => patch((d) => void (d.endDate = v))} />
+            <TextField label="Grade / GPA" value={e.score} onChange={(v) => patch((d) => void (d.score = v))} placeholder="8.6 CGPA / 91%" hint="Optional" />
             <TagsField label="Relevant courses" value={e.courses} onChange={(l) => patch((d) => void (d.courses = l))} placeholder="Data Structures, Databases" />
           </>
         )}
@@ -119,7 +126,7 @@ function EducationEditor() {
 function ProjectsEditor() {
   const projects = useResumeStore((s) => s.resume.projects);
   return (
-    <SectionCard title={SECTION_TITLES.projects} description="Great for freshers and career changers. Show what you built and the result.">
+    <SectionCard id="edit-projects" title={SECTION_TITLES.projects} description="Great for freshers and career changers. Show what you built and the result.">
       <ListEditor
         items={projects}
         select={(d) => d.projects}
@@ -145,13 +152,14 @@ function ProjectsEditor() {
 function SkillsEditor() {
   const skills = useResumeStore((s) => s.resume.skills);
   return (
-    <SectionCard title={SECTION_TITLES.skills} description="Group skills by category. Use the exact terms from job postings — ATS systems match keywords.">
+    <SectionCard id="edit-skills" title={SECTION_TITLES.skills} description="Group skills by category. Use the exact terms from job postings — ATS systems match keywords.">
       <ListEditor
         items={skills}
         select={(d) => d.skills}
         create={() => ({ name: '', keywords: [] })}
         itemTitle={(s) => s.name ?? ''}
         addLabel="Add skill group"
+        field="add"
         renderItem={(s, patch) => (
           <>
             <TextField wide label="Category" value={s.name} onChange={(v) => patch((d) => void (d.name = v))} placeholder="Programming Languages" />
@@ -166,7 +174,7 @@ function SkillsEditor() {
 function CertificatesEditor() {
   const certificates = useResumeStore((s) => s.resume.certificates);
   return (
-    <SectionCard title={SECTION_TITLES.certificates}>
+    <SectionCard id="edit-certificates" title={SECTION_TITLES.certificates}>
       <ListEditor
         items={certificates}
         select={(d) => d.certificates}
@@ -189,7 +197,7 @@ function CertificatesEditor() {
 function AwardsEditor() {
   const awards = useResumeStore((s) => s.resume.awards);
   return (
-    <SectionCard title={SECTION_TITLES.awards}>
+    <SectionCard id="edit-awards" title={SECTION_TITLES.awards}>
       <ListEditor
         items={awards}
         select={(d) => d.awards}
@@ -212,7 +220,7 @@ function AwardsEditor() {
 function LanguagesEditor() {
   const languages = useResumeStore((s) => s.resume.languages);
   return (
-    <SectionCard title={SECTION_TITLES.languages}>
+    <SectionCard id="edit-languages" title={SECTION_TITLES.languages}>
       <ListEditor
         items={languages}
         select={(d) => d.languages}
@@ -246,6 +254,9 @@ export function Editor() {
   const hidden = useResumeStore((s) => s.resume.meta.hiddenSections);
   // Re-mount editors when a whole new resume is loaded so open/closed state resets.
   const revision = useResumeStore((s) => s.revision);
+  useFocusRequest();
+  const isPhone = useMedia(PHONE_QUERY);
+  useScrollSpy(!isPhone, `${revision}:${order.join()}`);
   return (
     <div className="editor" key={revision}>
       <BasicsEditor />

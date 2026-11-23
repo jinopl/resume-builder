@@ -15,12 +15,14 @@ function readStorage(key: string): string | null {
     return null;
   }
 }
-function writeStorage(key: string, value: string | null) {
+/** Returns false when storage is unavailable (private mode, full, blocked). */
+function writeStorage(key: string, value: string | null): boolean {
   try {
     if (value === null) localStorage.removeItem(key);
     else localStorage.setItem(key, value);
+    return true;
   } catch {
-    /* storage unavailable — autosave silently does nothing */
+    return false;
   }
 }
 
@@ -34,19 +36,33 @@ function loadSettings(): { autosave: boolean } {
   return { autosave: true };
 }
 
-function loadInitialResume(autosave: boolean): Resume {
+export type ExampleKind = 'experienced' | 'fresher';
+export type Tab = 'edit' | 'design' | 'check' | 'preview';
+
+/** Where the editor should jump to (set by the Check tab). `n` makes repeat requests distinct. */
+export interface FocusRequest {
+  /** DOM id of the section card, e.g. `edit-work`. */
+  section: string;
+  /** Entry in a list section. */
+  index?: number;
+  /** `data-field` of the input to focus. */
+  field?: string;
+  n: number;
+}
+
+function loadInitialResume(autosave: boolean): { resume: Resume; example: ExampleKind | null } {
   if (autosave) {
     const raw = readStorage(RESUME_KEY);
     if (raw) {
       try {
         const parsed = parseResume(JSON.parse(raw));
-        if (parsed.ok) return parsed.resume;
+        if (parsed.ok) return { resume: parsed.resume, example: null };
       } catch {
         /* corrupted — fall through */
       }
     }
   }
-  return sampleResume();
+  return { resume: sampleResume('experienced'), example: 'experienced' };
 }
 
 interface ResumeState {
@@ -58,36 +74,71 @@ interface ResumeState {
   pageCount: number;
   /** Which document the editor, preview and download act on. */
   doc: 'resume' | 'cover';
+  /** Set while an untouched example is loaded; cleared by the first edit. */
+  example: ExampleKind | null;
+  /** Edits made since the last file save or load (guards closing the tab when autosave can't help). */
+  unsaved: boolean;
+  /** The last autosave failed because this browser blocks storage. */
+  saveFailed: boolean;
+  /** Time of the last successful autosave. */
+  lastSaved: number | null;
+  focusRequest: FocusRequest | null;
+  tab: Tab;
+  /** DOM id of the chapter in view (desktop) or open (phone), e.g. `edit-work`. */
+  activeChapter: string | null;
+  setTab: (tab: Tab) => void;
+  setActiveChapter: (id: string | null) => void;
   setDoc: (doc: 'resume' | 'cover') => void;
   update: (recipe: (draft: Resume) => void) => void;
+  /** Replace the whole resume, e.g. with a loaded file (counts as saved). */
   replace: (resume: Resume) => void;
+  loadExample: (kind: ExampleKind) => void;
+  dismissExample: () => void;
+  markSaved: () => void;
   setAutosave: (on: boolean) => void;
   setPageCount: (n: number) => void;
   /** Wipe the saved copy and start with an empty resume. */
   clearAll: () => void;
+  requestFocus: (target: Omit<FocusRequest, 'n'>) => void;
 }
 
 const settings = loadSettings();
+const initial = loadInitialResume(settings.autosave);
 
 export const useResumeStore = create<ResumeState>((set) => ({
-  resume: loadInitialResume(settings.autosave),
+  resume: initial.resume,
   revision: 0,
   autosave: settings.autosave,
   pageCount: 0,
   doc: 'resume',
-  setDoc: (doc) => set({ doc }),
-  update: (recipe) => set((s) => ({ resume: produce(s.resume, recipe) })),
-  replace: (resume) => set((s) => ({ resume, revision: s.revision + 1 })),
+  example: initial.example,
+  unsaved: false,
+  saveFailed: false,
+  lastSaved: null,
+  focusRequest: null,
+  tab: 'edit',
+  activeChapter: null,
+  setTab: (tab) => set({ tab }),
+  setActiveChapter: (activeChapter) => set({ activeChapter }),
+  setDoc: (doc) => set((s) => (s.doc === doc ? {} : { doc, activeChapter: null })),
+  update: (recipe) => set((s) => ({ resume: produce(s.resume, recipe), example: null, unsaved: true })),
+  replace: (resume) => set((s) => ({ resume, revision: s.revision + 1, example: null, unsaved: false })),
+  loadExample: (kind) =>
+    set((s) => ({ resume: sampleResume(kind), revision: s.revision + 1, example: kind, unsaved: false })),
+  dismissExample: () => set({ example: null }),
+  markSaved: () => set({ unsaved: false }),
   setAutosave: (on) => {
     writeStorage(SETTINGS_KEY, JSON.stringify({ autosave: on }));
     if (!on) writeStorage(RESUME_KEY, null);
-    set({ autosave: on });
+    set({ autosave: on, saveFailed: false, lastSaved: null });
   },
   setPageCount: (n) => set({ pageCount: n }),
   clearAll: () => {
     writeStorage(RESUME_KEY, null);
-    set((s) => ({ resume: emptyResume(), revision: s.revision + 1 }));
+    set((s) => ({ resume: emptyResume(), revision: s.revision + 1, example: null, unsaved: false, activeChapter: null }));
   },
+  requestFocus: (target) =>
+    set((s) => ({ focusRequest: { ...target, n: (s.focusRequest?.n ?? 0) + 1 }, activeChapter: target.section })),
 }));
 
 // Debounced autosave to this browser's localStorage only.
@@ -97,6 +148,7 @@ useResumeStore.subscribe((state, prev) => {
   if (state.resume === prev.resume && state.autosave === prev.autosave) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    writeStorage(RESUME_KEY, JSON.stringify(useResumeStore.getState().resume));
+    const ok = writeStorage(RESUME_KEY, JSON.stringify(useResumeStore.getState().resume));
+    useResumeStore.setState(ok ? { saveFailed: false, lastSaved: Date.now() } : { saveFailed: true });
   }, 400);
 });
