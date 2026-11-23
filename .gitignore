@@ -2,3 +2,7 @@ node_modules
 dist
 *.local
 .DS_Store
+
+# Local design-tool files (Impeccable skill and its working state)
+.claude/
+.impeccable/
