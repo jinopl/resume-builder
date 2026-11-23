@@ -30,6 +30,18 @@ export interface Variant {
   spacing: number;
   /** Page margin in points. */
   margin: number;
+  /**
+   * Photo-led two-column layout instead of the single-column ATS layout.
+   * Only the photo templates set this: `sidebar` is Profile (profile.tsx),
+   * `banner` is Banner (banner.tsx).
+   */
+  sidebar?: {
+    layout: 'sidebar' | 'banner';
+    /** Width of the side column in points (A4 is 595pt wide). */
+    width: number;
+    /** Photo width/height in points for the medium size. */
+    photo: number;
+  };
 }
 
 export const VARIANTS = {
@@ -80,5 +92,42 @@ export const VARIANTS = {
     scale: 0.98,
     spacing: 0.92,
     margin: 34,
+  },
+  /**
+   * Not ATS-optimised: coloured sidebar with the photo, contact details and
+   * short sections; the main column holds summary, experience and education.
+   * Only `nameSize`, `scale`, `spacing`, `margin` and `sidebar` are used.
+   */
+  profile: {
+    header: 'left',
+    nameSize: 25,
+    nameUpper: false,
+    labelAccent: true,
+    headerRule: 'none',
+    heading: 'bar',
+    entry: 'split',
+    scale: 0.95,
+    spacing: 0.9,
+    margin: 30,
+    sidebar: { layout: 'sidebar', width: 186, photo: 112 },
+  },
+  /**
+   * Not ATS-optimised: a light side column with the photo, contact details,
+   * skills and languages; the main column opens with a coloured banner
+   * holding the name, headline and summary.
+   * Only `nameSize`, `scale`, `spacing`, `margin` and `sidebar` are used.
+   */
+  banner: {
+    header: 'left',
+    nameSize: 26,
+    nameUpper: false,
+    labelAccent: true,
+    headerRule: 'none',
+    heading: 'rule',
+    entry: 'stacked',
+    scale: 0.95,
+    spacing: 0.9,
+    margin: 30,
+    sidebar: { layout: 'banner', width: 170, photo: 112 },
   },
 } satisfies Record<string, Variant>;

@@ -3,6 +3,7 @@ import type { Issue, IssueTarget, Severity } from './checks';
 import { useScore } from './useScore';
 import { SectionCard } from '../editor/fields';
 import { useChapters, type Chapter } from '../editor/chapters';
+import { getTemplate } from '../templates';
 
 const GROUPS: { severity: Severity; title: string }[] = [
   { severity: 'error', title: 'Fix first' },
@@ -60,6 +61,7 @@ export function Checker({ onGo }: { onGo: (target: IssueTarget) => void }) {
   const gettingStarted = done < essentials.length;
   const listed = gettingStarted ? issues.filter((i) => !essentials.some((e) => e.id === i.id)) : issues;
   const noun = doc === 'cover' ? 'cover letter' : 'resume';
+  const atsTemplate = useResumeStore((s) => getTemplate(s.resume.meta.template).ats);
 
   return (
     <div className="editor">
@@ -103,7 +105,9 @@ export function Checker({ onGo }: { onGo: (target: IssueTarget) => void }) {
               <p className="muted">
                 {doc === 'cover'
                   ? 'Checks for a focused, tailored letter: recipient, length, structure and specifics.'
-                  : 'Rule-based checks for ATS readability and common resume mistakes. The template already handles formatting (single column, standard headings, real text). These checks are about your content and only count sections shown in the PDF.'}
+                  : atsTemplate
+                    ? 'Rule-based checks for ATS readability and common resume mistakes. The template already handles formatting (single column, standard headings, real text). These checks are about your content and only count sections shown in the PDF.'
+                    : 'Rule-based checks for common resume mistakes. Your template is not ATS-optimised (see Tips). These checks are about your content and only count sections shown in the PDF.'}
               </p>
             </div>
           </div>

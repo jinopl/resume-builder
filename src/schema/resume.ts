@@ -22,6 +22,11 @@ export const BasicsSchema = z
     image: str,
     email: str,
     phone: str,
+    /**
+     * Not part of the JSON Resume standard (other tools ignore it). Optional,
+     * ISO date (YYYY-MM-DD); printed as "Date of birth: 12 Mar 2002".
+     */
+    birthDate: str,
     url: str,
     summary: str,
     location: LocationSchema.optional(),
@@ -121,6 +126,20 @@ export const CoverLetterSchema = z
   })
   .passthrough();
 
+export const PHOTO_SHAPES = ['circle', 'rounded', 'square'] as const;
+export type PhotoShape = (typeof PHOTO_SHAPES)[number];
+export const PHOTO_SIZES = ['small', 'medium', 'large'] as const;
+export type PhotoSize = (typeof PHOTO_SIZES)[number];
+
+export const PhotoSettingsSchema = z
+  .object({
+    /** Show the photo in the PDF (resume and cover letter) when one is set. */
+    show: z.boolean().catch(true).default(true),
+    shape: z.enum(PHOTO_SHAPES).catch('circle').default('circle'),
+    size: z.enum(PHOTO_SIZES).catch('medium').default('medium'),
+  })
+  .passthrough();
+
 /** JSON Resume allows extra fields in `meta`; we keep our app settings there. */
 export const MetaSchema = z
   .object({
@@ -142,6 +161,8 @@ export const MetaSchema = z
       .default([])
       .transform((keys) => normalizeSectionOrder(keys).filter((k) => keys.includes(k))),
     coverLetter: CoverLetterSchema.prefault({}),
+    /** Photo display settings. The image itself is `basics.image` (an embedded data URL). */
+    photo: PhotoSettingsSchema.prefault({}),
   })
   .passthrough();
 
@@ -163,6 +184,7 @@ export const ResumeSchema = z
 export type Resume = z.infer<typeof ResumeSchema>;
 export type Basics = z.infer<typeof BasicsSchema>;
 export type CoverLetter = z.infer<typeof CoverLetterSchema>;
+export type PhotoSettings = z.infer<typeof PhotoSettingsSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type Work = z.infer<typeof WorkSchema>;
 export type Education = z.infer<typeof EducationSchema>;

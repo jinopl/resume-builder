@@ -42,6 +42,7 @@
   --ch-magenta: #a83a7d;
   --ch-maroon: #8c1d40;
   --ch-slate: #4f5d73;
+  --ch-umber: #7b4b2a;
   /* Coaching boxes */
   --try-bg: #fff7e0;
   --try-title: #7a5200;
@@ -54,6 +55,7 @@
   --know-text: #1d3557;
   --paper-ghost: #e9ecf0;
   --paper-ghost-text: #5d6877;
+  --crop-mask: rgba(29, 53, 87, 0.55);  /* dims the photo outside the crop shape */
   --shadow-sm: 0 1px 2px rgba(29, 53, 87, 0.12);
   --shadow-page: 0 1px 3px rgba(29, 53, 87, 0.12), 0 8px 24px rgba(29, 53, 87, 0.09);
   --shadow-menu: 0 12px 32px -8px rgba(29, 53, 87, 0.24), 0 2px 6px rgba(29, 53, 87, 0.08);
@@ -107,6 +109,7 @@
   --ch-magenta: #a83a7d;
   --ch-maroon: #8c1d40;
   --ch-slate: #4f5d73;
+  --ch-umber: #7b4b2a;
   --try-bg: rgba(242, 169, 0, 0.12);
   --try-title: #f5c45a;
   --try-text: #f1e2bd;
@@ -118,6 +121,7 @@
   --know-text: #dfe8f3;
   --paper-ghost: #e9ecf0;
   --paper-ghost-text: #5d6877;
+  --crop-mask: rgba(0, 0, 0, 0.62);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-page: 0 1px 3px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.45);
   --shadow-menu: 0 16px 36px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -385,6 +389,65 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .footer__warn { color: var(--note-text); background: var(--warn-soft); padding: 8px 10px; border-radius: 8px; }
 .switch { display: inline-flex; gap: 8px; align-items: center; font-weight: 600; color: var(--text); cursor: pointer; }
 
+/* ---------- Photo chapter (photo templates only) ---------- */
+.photo-hint { margin: 14px 0 0; }
+.photo-hint .link-btn { font-size: inherit; }
+.photo-error { margin: 0 0 12px; }
+.photo-empty { display: flex; gap: 16px; align-items: flex-start; }
+.photo-empty__frame {
+  flex-shrink: 0; display: grid; place-items: center; width: 104px; height: 104px; border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--ch) 45%, var(--border-strong)); color: var(--muted); background: var(--surface-2);
+}
+.photo-empty__text { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.photo-empty__text p { margin: 0; }
+.photo-current { display: flex; gap: 20px; align-items: flex-start; }
+.photo-current__options { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; }
+.photo-current__buttons { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
+.photo-thumb { display: block; flex-shrink: 0; object-fit: cover; background: var(--paper); border: 1px solid var(--border); transition: opacity .15s, border-radius .15s; }
+.photo-thumb--circle { border-radius: 50%; }
+.photo-thumb--rounded { border-radius: 16px; }
+.photo-thumb--square { border-radius: 3px; }
+.photo-thumb--off { opacity: 0.4; }
+.photo-option { display: flex; flex-direction: column; gap: 6px; }
+.photo-option__label { font-size: 0.88rem; font-weight: 600; color: var(--muted); }
+.choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.choice {
+  display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; cursor: pointer;
+  border: 1px solid var(--border-strong); border-radius: 999px; background: var(--surface); color: var(--text); font-weight: 500;
+}
+.choice:hover { background: var(--hover); }
+.choice--active, .choice--active:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; box-shadow: inset 0 0 0 1px var(--accent); }
+.choice__glyph { width: 14px; height: 14px; border: 2px solid currentColor; }
+.choice__glyph--circle { border-radius: 50%; }
+.choice__glyph--rounded { border-radius: 4px; }
+.choice__glyph--square { border-radius: 0; }
+.btn--danger-text { color: var(--danger); }
+.btn--danger-text:hover { background: var(--danger-soft); }
+.cropper { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+.cropper__frame { position: relative; overflow: hidden; border-radius: 8px; background: var(--paper); flex-shrink: 0; touch-action: none; }
+.cropper__frame canvas { display: block; cursor: grab; touch-action: none; }
+.cropper__frame canvas:active { cursor: grabbing; }
+.cropper__frame canvas:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+/* Shows the shape that will appear on the PDF; the stored image stays square. */
+.cropper__frame::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: 0 0 0 999px var(--crop-mask); }
+.cropper__frame--circle::after { border-radius: 50%; }
+.cropper__frame--rounded::after { border-radius: 14%; }
+.cropper__controls { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 200px; }
+.cropper__controls p { margin: 0; }
+.cropper__zoom { width: 100%; accent-color: var(--accent); }
+.cropper__actions { display: flex; gap: 8px; }
+@media (max-width: 520px) {
+  .photo-current, .photo-empty { flex-direction: column; align-items: center; text-align: center; }
+  .photo-current__options, .photo-empty__text { align-items: center; width: 100%; }
+  .photo-option { align-items: center; }
+  .choices, .photo-current__buttons { justify-content: center; }
+  .choice { padding: 0 11px; gap: 6px; }
+  .cropper { justify-content: center; }
+  .cropper__controls { text-align: center; }
+  .cropper__controls .photo-option { align-items: stretch; }
+  .cropper__actions { justify-content: center; }
+}
+
 /* ---------- Example banner (a "Do you know?" box at chapter scale) ---------- */
 .welcome {
   position: relative; display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px;
@@ -491,6 +554,13 @@ div.issue { padding: 8px 0; }
 .gallery__item--active { border-color: var(--accent); background: var(--accent-soft); }
 .gallery__name { font-weight: 700; margin-top: 6px; }
 .gallery__desc { font-size: 0.85rem; color: var(--muted); }
+.gallery__name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.gallery__badge {
+  display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px;
+  background: var(--warn-soft); border: 1px solid var(--warn-border); color: var(--note-text);
+  font-size: 0.75rem; font-weight: 700;
+}
+.gallery__note { font-size: 0.82rem; color: var(--note-text); line-height: 1.4; }
 .thumb { aspect-ratio: 210 / 297; background: var(--paper); border-radius: 4px; overflow: hidden; box-shadow: var(--shadow-page); }
 .thumb canvas { width: 100%; height: auto; display: block; }
 .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }

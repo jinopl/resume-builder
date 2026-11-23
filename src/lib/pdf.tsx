@@ -2,6 +2,8 @@ import { Font, pdf } from '@react-pdf/renderer';
 import type { Resume } from '../schema/resume';
 import { getTemplate } from '../templates';
 import { CoverLetterDocument, ResumeDocument } from '../templates/layout';
+import { ProfileCoverLetterDocument, ProfileResumeDocument } from '../templates/profile';
+import { BannerCoverLetterDocument, BannerResumeDocument } from '../templates/banner';
 import { getTheme } from '../templates/theme';
 import { cleanResume, visibleResume } from './clean';
 import { downloadBlob, pdfFileName } from './io';
@@ -16,7 +18,19 @@ export async function renderPdfBlob(resume: Resume, kind: DocKind = 'resume', te
   const cleaned = visibleResume(cleanResume(resume));
   const { variant } = getTemplate(templateId ?? cleaned.meta.template);
   const theme = getTheme(cleaned.meta);
-  const Doc = kind === 'cover' ? CoverLetterDocument : ResumeDocument;
+  const layout = variant.sidebar?.layout;
+  const Doc =
+    layout === 'banner'
+      ? kind === 'cover'
+        ? BannerCoverLetterDocument
+        : BannerResumeDocument
+      : layout === 'sidebar'
+        ? kind === 'cover'
+          ? ProfileCoverLetterDocument
+          : ProfileResumeDocument
+        : kind === 'cover'
+          ? CoverLetterDocument
+          : ResumeDocument;
   return pdf(<Doc resume={cleaned} variant={variant} theme={theme} />).toBlob();
 }
 

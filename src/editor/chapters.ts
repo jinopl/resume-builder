@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { useResumeStore } from '../store/useResumeStore';
 import { cleanResume } from '../lib/clean';
 import { SECTION_TITLES, type Resume } from '../schema/resume';
+import { getTemplate } from '../templates';
+import { photoForPdf } from '../lib/photo';
 
 /**
  * Every editor section is a numbered "chapter" with its own colour band,
@@ -25,6 +27,7 @@ export interface Coach {
 
 const COLOR: Record<string, string> = {
   basics: 'var(--ch-blue)',
+  photo: 'var(--ch-umber)',
   summary: 'var(--ch-violet)',
   work: 'var(--ch-ochre)',
   education: 'var(--ch-leaf)',
@@ -41,6 +44,7 @@ const COLOR: Record<string, string> = {
 /** One coaching box per chapter, kept short. */
 export const COACH: Record<string, Coach> = {
   'edit-basics': { kind: 'know', text: 'Use a plain, professional email, ideally your name. It’s the first thing a recruiter copies.' },
+  'edit-photo': { kind: 'know', text: 'Photos are expected by many employers in India, Europe, the Middle East and Asia. In the US, UK, Canada and Australia, leave the photo out and use an ATS template instead.' },
   'edit-summary': { kind: 'try', text: 'Start with your role and years of experience (or your degree), then one result with a number in it.' },
   'edit-work': { kind: 'try', text: 'Begin each bullet with an action verb and add a number: “Cut report time from 6 hours to 20 minutes.”' },
   'edit-education': { kind: 'try', text: 'Freshers: add Class XII (and Class X) with the board and your percentage. Many recruiters screen on it.' },
@@ -63,8 +67,13 @@ function resumeChapters(resume: Resume): Omit<Chapter, 'num'>[] {
     done: !!(r.basics.name && r.basics.email),
     hidden: false,
   };
+  // The photo chapter only appears with the template that prints a photo.
+  const photo: Omit<Chapter, 'num'>[] = getTemplate(resume.meta.template).variant.sidebar
+    ? [{ id: 'edit-photo', title: 'Photo', color: COLOR.photo, done: !!photoForPdf(resume), hidden: false }]
+    : [];
   return [
     basics,
+    ...photo,
     ...resume.meta.sectionOrder.map((key) => ({
       id: `edit-${key}`,
       title: SECTION_TITLES[key],

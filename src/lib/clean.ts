@@ -47,6 +47,7 @@ export function cleanResume(resume: Resume): Resume {
       sectionOrder: resume.meta.sectionOrder,
       hiddenSections: resume.meta.hiddenSections,
       coverLetter: c.meta?.coverLetter ?? {},
+      photo: resume.meta.photo,
     },
   } as Resume;
 }

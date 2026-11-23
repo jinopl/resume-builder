@@ -38,7 +38,10 @@ function TemplateGallery() {
   // Unknown ids from an imported file render with the fallback; show that as selected.
   const current = getTemplate(resume.meta.template).id;
   return (
-    <SectionCard title="Template" description="All templates are single-column and ATS-friendly. Your content stays the same when you switch.">
+    <SectionCard
+      title="Template"
+      description="Classic, Modern, Compact and Executive are single-column and ATS-friendly. Profile and Banner add your photo. Your content stays the same when you switch."
+    >
       <div className="gallery" role="radiogroup" aria-label="Template">
         {TEMPLATES.map((t) => (
           <button
@@ -50,8 +53,16 @@ function TemplateGallery() {
             onClick={() => update((d) => void (d.meta.template = t.id))}
           >
             <Thumbnail templateId={t.id} resume={resume} />
-            <span className="gallery__name">{t.name}</span>
+            <span className="gallery__name">
+              {t.name}
+              {t.ats ? null : <span className="gallery__badge">Not ATS-optimised</span>}
+            </span>
             <span className="gallery__desc">{t.description}</span>
+            {t.ats ? null : (
+              <span className="gallery__note">
+                For applications where photos are expected and a recruiter reads the PDF directly. Online job portals may misread two columns.
+              </span>
+            )}
           </button>
         ))}
       </div>

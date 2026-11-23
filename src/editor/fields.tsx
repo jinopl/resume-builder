@@ -13,14 +13,16 @@ interface TextFieldProps {
   onChange: (value: string) => void;
   placeholder?: string;
   hint?: string;
-  type?: 'text' | 'email' | 'tel' | 'url';
+  type?: 'text' | 'email' | 'tel' | 'url' | 'date';
+  /** Latest allowed value, for date inputs. */
+  max?: string;
   wide?: boolean;
   error?: string;
   /** Key the Check tab uses to jump to this input. */
   field?: string;
 }
 
-export function TextField({ label, value, onChange, placeholder, hint, type = 'text', wide, error, field }: TextFieldProps) {
+export function TextField({ label, value, onChange, placeholder, hint, type = 'text', wide, error, field, max }: TextFieldProps) {
   const id = useId();
   return (
     <div className={`field${wide ? ' field--wide' : ''}`}>
@@ -30,6 +32,7 @@ export function TextField({ label, value, onChange, placeholder, hint, type = 't
         type={type}
         data-field={field}
         value={value ?? ''}
+        max={max}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={error ? true : undefined}

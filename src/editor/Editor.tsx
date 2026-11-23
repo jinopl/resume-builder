@@ -3,12 +3,14 @@ import { SECTION_TITLES, type SectionKey } from '../schema/resume';
 import { useFocusRequest } from './useFocusRequest';
 import { useScrollSpy } from './useScrollSpy';
 import { PHONE_QUERY, useMedia } from '../lib/useMedia';
+import { PhotoEditor } from './PhotoField';
+import { getTemplate } from '../templates';
 import { BulletsField, DateField, ListEditor, SectionCard, TagsField, TextArea, TextField } from './fields';
 
 function BasicsEditor() {
   const basics = useResumeStore((s) => s.resume.basics);
   const update = useResumeStore((s) => s.update);
-  const set = (key: 'name' | 'label' | 'email' | 'phone' | 'url') => (v: string) =>
+  const set = (key: 'name' | 'label' | 'email' | 'phone' | 'url' | 'birthDate') => (v: string) =>
     update((d) => {
       d.basics[key] = v;
     });
@@ -29,7 +31,18 @@ function BasicsEditor() {
         <TextField label="State / Region" value={basics.location?.region} onChange={setLoc('region')} placeholder="Karnataka" />
         <TextField label="Country code" value={basics.location?.countryCode} onChange={setLoc('countryCode')} placeholder="IN" hint="Optional, e.g. US, IN, GB" />
         <TextField label="Website / Portfolio" type="url" value={basics.url} onChange={set('url')} placeholder="https://janedoe.dev" />
+        <TextField
+          field="birthDate"
+          label="Date of birth (optional)"
+          // A picker for full dates; an imported "2002" or "2002-03" stays editable as text.
+          type={!basics.birthDate || /^\d{4}-\d{2}-\d{2}$/.test(basics.birthDate) ? 'date' : 'text'}
+          max={new Date().toISOString().slice(0, 10)}
+          value={basics.birthDate}
+          onChange={set('birthDate')}
+          hint="Common in India, the Middle East and parts of Europe and Asia. Leave it empty for the US, UK, Canada and Australia."
+        />
       </div>
+      <PhotoHint />
       <h3 className="subheading">Online profiles</h3>
       <ListEditor
         items={basics.profiles ?? []}
@@ -47,6 +60,21 @@ function BasicsEditor() {
         )}
       />
     </SectionCard>
+  );
+}
+
+/** Only the photo templates (Profile, Banner) print a photo; point people there instead of offering a photo that wouldn't show. */
+function PhotoHint() {
+  const usesPhoto = useResumeStore((s) => !!getTemplate(s.resume.meta.template).variant.sidebar);
+  const setTab = useResumeStore((s) => s.setTab);
+  if (usesPhoto) return null;
+  return (
+    <p className="photo-hint field__hint">
+      Need a photo on your resume? Only the Profile and Banner templates show one.{' '}
+      <button type="button" className="link-btn" onClick={() => setTab('design')}>
+        Choose it in Design
+      </button>
+    </p>
   );
 }
 
@@ -256,10 +284,12 @@ export function Editor() {
   const revision = useResumeStore((s) => s.revision);
   useFocusRequest();
   const isPhone = useMedia(PHONE_QUERY);
-  useScrollSpy(!isPhone, `${revision}:${order.join()}`);
+  const usesPhoto = useResumeStore((s) => !!getTemplate(s.resume.meta.template).variant.sidebar);
+  useScrollSpy(!isPhone, `${revision}:${usesPhoto}:${order.join()}`);
   return (
     <div className="editor" key={revision}>
       <BasicsEditor />
+      {usesPhoto ? <PhotoEditor /> : null}
       {order.map((key) => {
         const SectionEditor = SECTION_EDITORS[key];
         return hidden.includes(key) ? (

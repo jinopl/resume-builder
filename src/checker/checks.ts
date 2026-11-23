@@ -1,6 +1,8 @@
 import type { Resume } from '../schema/resume';
 import { clean, cleanResume, visibleResume } from '../lib/clean';
 import { isValidDate } from '../lib/dates';
+import { isEmbeddedPhoto, photoForPdf } from '../lib/photo';
+import { getTemplate } from '../templates';
 
 export type Severity = 'error' | 'warning' | 'tip';
 
@@ -68,6 +70,36 @@ export function runChecks(raw: Resume, pageCount: number): Issue[] {
   if (!b.label) add('tip', 'Personal details', 'Add a headline matching the job title you are targeting.', at('edit-basics', 'label'));
   if (!(b.profiles ?? []).some((p) => /linkedin/i.test(`${p.network} ${p.url}`)))
     add('tip', 'Personal details', 'Add your LinkedIn profile URL.', at('edit-basics', 'profiles'));
+
+  if (b.birthDate) {
+    if (!isValidDate(b.birthDate)) add('error', 'Personal details', 'Date of birth: use the date picker, or YYYY-MM-DD.', at('edit-basics', 'birthDate'));
+    else
+      add(
+        'tip',
+        'Personal details',
+        'Your date of birth is shown. Employers in India, the Middle East and parts of Europe and Asia often expect it; leave it out for the US, UK, Canada and Australia, where it can invite age bias.',
+        at('edit-basics', 'birthDate'),
+      );
+  }
+
+  // Only the photo templates (not ATS-optimised) show a photo.
+  const template = getTemplate(r.meta.template);
+  if (!template.ats) {
+    add(
+      'tip',
+      'Template',
+      `${template.name} isn’t ATS-optimised: two columns and a photo can confuse the software behind online job portals. Use it when a recruiter reads your PDF directly; for portal applications, pick Classic, Modern, Compact or Executive in the Design tab.`,
+    );
+    if (photoForPdf(r))
+      add(
+        'tip',
+        'Photo',
+        'Your photo is shown. Many employers in India, Europe, the Middle East and Asia expect one; leave it out when applying in the US, UK, Canada or Australia.',
+        at('edit-photo', 'photo-show'),
+      );
+    else if (!isEmbeddedPhoto(r.basics.image))
+      add('tip', 'Photo', `The ${template.name} template is designed around a photo. Add one, or pick another template.`, at('edit-photo', 'photo-add'));
+  }
 
   // Summary
   const summary = b.summary ?? '';

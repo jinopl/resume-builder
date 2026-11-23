@@ -1,7 +1,7 @@
 import { Document, Link, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import type { ReactNode } from 'react';
 import { SECTION_TITLES, type Resume, type SectionKey } from '../schema/resume';
-import { formatDate, formatRange } from '../lib/dates';
+import { formatDate, formatFullDate, formatRange } from '../lib/dates';
 import type { Theme } from './theme';
 import type { Variant } from './variants';
 
@@ -232,6 +232,7 @@ function Header({ ctx, basics }: { ctx: Ctx; basics: Resume['basics'] }) {
         {basics.email}
       </Link>,
     );
+  if (basics.birthDate) contact.push(`Date of birth: ${formatFullDate(basics.birthDate)}`);
   const links = [basics.url, ...(basics.profiles ?? []).map((p) => p.url)].filter(Boolean) as string[];
   const linkItems = links.map((url) => (
     <Link key={url} src={href(url)} style={s.link}>

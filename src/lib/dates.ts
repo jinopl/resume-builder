@@ -17,6 +17,13 @@ export function formatDate(value?: string): string {
   return month ? `${MONTHS[Number(month) - 1]} ${year}` : year;
 }
 
+/** "2002-03-12" → "12 Mar 2002". Shorter dates fall back to formatDate. */
+export function formatFullDate(value?: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value?.trim() ?? '');
+  if (!m || !DATE_PATTERN.test(m[0])) return formatDate(value);
+  return `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}`;
+}
+
 /** "Mar 2021 – Present", "2018 – 2022", or a single date. */
 export function formatRange(start?: string, end?: string, ongoingLabel = 'Present'): string {
   const s = formatDate(start);
